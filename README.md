@@ -62,3 +62,49 @@ opts = function(_, opts)
 end,
 },
 ```
+
+default opts :
+```lua
+{
+  root_dir = require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }),
+  project_name = function()
+    return vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
+  end,
+
+  -- Where are the config and workspace dirs for a project?
+  jdtls_config_dir = function(project_name)
+    return vim.fn.stdpath("cache") .. "/jdtls/" .. project_name .. "/config"
+  end,
+  jdtls_workspace_dir = function(project_name)
+    return vim.fn.stdpath("cache") .. "/jdtls/" .. project_name .. "/workspace"
+  end,
+  cmd = { vim.fn.exepath("jdtls") },
+  full_cmd = function(opts)
+    local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
+    local cmd = vim.deepcopy(opts.cmd)
+    if project_name then
+      vim.list_extend(cmd, {
+        "-configuration",
+        opts.jdtls_config_dir(project_name),
+        "-data",
+        opts.jdtls_workspace_dir(project_name),
+      })
+    end
+    return cmd
+  end,
+
+  -- These depend on nvim-dap, but can additionally be disabled by setting false here.
+  dap = { hotcodereplace = "auto", config_overrides = {} },
+  dap_main = {},
+  test = true,
+  settings = {
+    java = {
+      inlayHints = {
+        parameterNames = {
+          enabled = "all",
+        },
+      },
+    },
+  },
+}
+```
