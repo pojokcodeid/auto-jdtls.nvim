@@ -9,7 +9,11 @@
 ```lua
 {
 "mfussenegger/nvim-jdtls",
-dependencies = { "pojokcodeid/auto-jdtls.nvim" },
+dependencies = {
+  "williamboman/mason.nvim",
+  "pojokcodeid/auto-jdtls.nvim",
+  "rcarriga/nvim-notify",
+},
 ft = { "java" },
 -- your opts go here
 opts = {},
@@ -64,6 +68,7 @@ end,
 ```
 
 default opts :
+
 ```lua
 {
   root_dir = require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }),
