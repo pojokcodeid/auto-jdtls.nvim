@@ -20,6 +20,10 @@ opts = {},
 -- stylua: ignore
 config = function(_, opts)
   require("auto-jdtls").setup(opts)
+  -- if you want to use the default keymaps
+  -- require("auto-jdtls.utils").lsp_keymaps()
+  -- require("auto-jdtls.utils").jdtls_keymaps()
+
   -- add LSP keymaps
   vim.keymap.set({ "n", "v" }, "<leader>l", "", { desc = "LSP" })
   -- Set vim motion for <Space> + l + h to show code documentation about the code the cursor is currently over if available
