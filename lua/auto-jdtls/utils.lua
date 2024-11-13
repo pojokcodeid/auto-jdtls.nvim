@@ -109,6 +109,10 @@ M.opts = {
   dap_main = {},
   test = true,
   settings = {
+    formatting = { 
+      tabSize = 4, 
+      insertSpaces = true,
+    },
     java = {
       inlayHints = {
         parameterNames = {
