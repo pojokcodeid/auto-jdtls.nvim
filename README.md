@@ -20,7 +20,23 @@ opts = {},
 -- stylua: ignore
 config = function(_, opts)
   require("auto-jdtls").setup(opts)
-  -- add keymaps
+  -- add LSP keymaps
+  vim.keymap.set({ "n", "v" }, "<leader>l", "", { desc = "LSP" })
+  -- Set vim motion for <Space> + l + h to show code documentation about the code the cursor is currently over if available
+  vim.keymap.set("n", "<leader>lh", vim.lsp.buf.hover, { desc = "Code Hover Documentation" })
+  -- Set vim motion for <Space> + l + d to go where the code/variable under the cursor was defined
+  vim.keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "Code Goto Definition" })
+  -- Set vim motion for <Space> + l + a for display code action suggestions for code diagnostics in both normal and visual mode
+  vim.keymap.set({ "n", "v" }, "<leader>la", vim.lsp.buf.code_action, { desc = "Code Actions" })
+  -- Set vim motion for <Space> + l + r to display references to the code under the cursor
+  vim.keymap.set("n", "<leader>lr", require("telescope.builtin").lsp_references, { desc = "Code Goto References" })
+  -- Set vim motion for <Space> + l + i to display implementations to the code under the cursor
+  vim.keymap.set("n", "<leader>li", require("telescope.builtin").lsp_implementations, { desc = "Code Goto Implementations" })
+  -- Set a vim motion for <Space> + l + <Shift>R to smartly rename the code under the cursor
+  vim.keymap.set("n", "<leader>lR", vim.lsp.buf.rename, { desc = "Code Rename" })
+  -- Set a vim motion for <Space> + l + <Shift>D to go to where the code/object was declared in the project (class file)
+  vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Code Goto Declaration" })
+  -- add keymaps JDTLS
   vim.keymap.set('n', '<leader>J', "", { desc = "Java" })
   -- Set a Vim motion to <Space> + <Shift>J + o to organize imports in normal mode
   vim.keymap.set('n', '<leader>Jo', "<Cmd> lua require('jdtls').organize_imports()<CR>", { desc = "Java Organize Imports" })
@@ -40,29 +56,6 @@ config = function(_, opts)
   vim.keymap.set('n', '<leader>JT', "<Cmd> lua require('jdtls').test_class()<CR>", { desc = "Java Test Class" })
   -- Set a Vim motion to <Space> + <Shift>J + u to update the project configuration
   vim.keymap.set('n', '<leader>Ju', "<Cmd> JdtUpdateConfig<CR>", { desc = "Java Update Config" })
-end,
-},
-{
-"williamboman/mason-lspconfig.nvim",
--- stylua: ignore
-opts = function(_, opts)
-  opts.ensure_installed = opts.ensure_installed or {}
-  vim.list_extend(opts.ensure_installed, { "jdtls" })
-  vim.keymap.set({ "n", "v" }, "<leader>l", "", { desc = "LSP" })
-  -- Set vim motion for <Space> + l + h to show code documentation about the code the cursor is currently over if available
-  vim.keymap.set("n", "<leader>lh", vim.lsp.buf.hover, { desc = "Code Hover Documentation" })
-  -- Set vim motion for <Space> + l + d to go where the code/variable under the cursor was defined
-  vim.keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "Code Goto Definition" })
-  -- Set vim motion for <Space> + l + a for display code action suggestions for code diagnostics in both normal and visual mode
-  vim.keymap.set({ "n", "v" }, "<leader>la", vim.lsp.buf.code_action, { desc = "Code Actions" })
-  -- Set vim motion for <Space> + l + r to display references to the code under the cursor
-  vim.keymap.set("n", "<leader>lr", require("telescope.builtin").lsp_references, { desc = "Code Goto References" })
-  -- Set vim motion for <Space> + l + i to display implementations to the code under the cursor
-  vim.keymap.set("n", "<leader>li", require("telescope.builtin").lsp_implementations, { desc = "Code Goto Implementations" })
-  -- Set a vim motion for <Space> + l + <Shift>R to smartly rename the code under the cursor
-  vim.keymap.set("n", "<leader>lR", vim.lsp.buf.rename, { desc = "Code Rename" })
-  -- Set a vim motion for <Space> + l + <Shift>D to go to where the code/object was declared in the project (class file)
-  vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Code Goto Declaration" })
 end,
 },
 ```
