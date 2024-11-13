@@ -143,9 +143,13 @@ M.attach_jdtls = function(op)
   ensure_ts_install("java")
 
   local mason_registry = require("mason-registry")
-  if not mason_registry.is_installed("jdtls") then
+  if
+    not mason_registry.is_installed("jdtls")
+    or not mason_registry.is_installed("java-debug-adapter")
+    or not mason_registry.is_installed("java-test")
+  then
     vim.cmd("Mason")
-    require("notify")("Mason Installed Dependency, please restart nvim after installation is completed")
+    require("notify")("Mason Installed Dependency,\n please restart nvim after installation is completed")
     return
   end
   local bundles = {} ---@type string[]
