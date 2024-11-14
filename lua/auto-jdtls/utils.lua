@@ -73,18 +73,15 @@ M.is_gradle_project = function()
 end
 
 M.is_main_class = function()
-  local function check_Main_Class()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    for i, line in ipairs(content) do
-      if line:match("public static void main%s*%(") then
-        return true
-      end
+  local bufnr = vim.api.nvim_get_current_buf()
+  local content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  for i, line in ipairs(content) do
+    if line:match("public static void main%s*%(") then
+      return true
     end
-
-    return false
   end
-  check_Main_Class()
+
+  return false
 end
 
 M.run_aven_pring_boot = function()
