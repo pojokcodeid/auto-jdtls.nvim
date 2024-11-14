@@ -94,6 +94,57 @@ M.jdtls_keymaps=function ()
     end
     vim.keymap.set("n", "<leader>rG", ":lua RunGradleSpringBoot()<CR>", { desc = "Run Gradle Sping Boot" })
   end
+  -- Run maven projek
+  if vim.fn.findfile("pom.xml", vim.fn.getcwd()) == "pom.xml" then
+    -- Fungsi untuk mencari file .jar dalam folder target
+    local function find_jar_file()
+      local target_dir = "target"
+      local jar_file = nil
+
+      local handle = vim.loop.fs_scandir(target_dir)
+      if handle then
+        while true do
+          local name, t = vim.loop.fs_scandir_next(handle)
+          if not name then
+            break
+          end
+          if t == "file" and name:match("%.jar$") then
+            jar_file = name
+            break
+          end
+        end
+      end
+      return jar_file
+    end
+    local jar_file = find_jar_file()
+    -- Buat fungsi untuk menjalankan perintah secara berurutan dalam mode diam
+    function Run_mvn_and_java()
+      -- daptkan path
+      local root = vim.uv.cwd()
+      local fname = vim.api.nvim_buf_get_name(0)
+      fname = fname:gsub(root, "")
+      fname = fname:gsub("/src/main/java/", "")
+      fname = fname:gsub("\\src\\main\\java\\", "")
+      fname = fname:gsub(".java", ""):gsub("/", ".")
+      fname = fname:gsub("\\", ".")
+      -- Jalankan perintah mvn package secara diam-diam
+      local notif_ok, notify = pcall(require, "notify")
+      if notif_ok then
+        notify("Compile Start !", "info")
+      end
+      vim.fn.jobstart("mvn package", {
+        on_exit = function()
+          vim.cmd("terminal java -cp target/" .. jar_file .. " " .. fname)
+        end,
+      })
+    end
+    -- Buat command custom di Neovim
+    vim.api.nvim_create_user_command("RunMvnAndJava", function()
+      Run_mvn_and_java()
+    end, { nargs = 0 })
+    -- Buat key mapping yang memanggil fungsi di atas
+    vim.keymap.set("n", "<leader>rM", ":lua Run_mvn_and_java()<CR>", { desc = "Run Maven Project" })
+  end
 end
 
 M.opts = {
