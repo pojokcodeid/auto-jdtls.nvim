@@ -84,16 +84,6 @@ M.is_main_class = function()
 
     return false
   end
-  local result = check_Main_Class()
-  if not result then
-    local notif_ok, notify = pcall(require, "notify")
-    if notif_ok then
-      notify("Please open java main class !", "info")
-    else
-      print("Please open java main class !")
-    end
-    return
-  end
 end
 
 M.run_aven_pring_boot = function()
@@ -143,50 +133,60 @@ end
 
 M.run_mvn_and_java = function()
   if M.is_maven_project() then
-    M.is_main_class()
-    -- Fungsi untuk mencari file .jar dalam folder target
-    local function find_jar_file()
-      local target_dir = "target"
-      local jar_file = nil
-
-      local handle = vim.loop.fs_scandir(target_dir)
-      if handle then
-        while true do
-          local name, t = vim.loop.fs_scandir_next(handle)
-          if not name then
-            break
-          end
-          if t == "file" and name:match("%.jar$") then
-            jar_file = name
-            break
-          end
-        end
-      end
-      return jar_file
-    end
-    local jar_file = find_jar_file()
-    -- Buat fungsi untuk menjalankan perintah secara berurutan dalam mode diam
-    function RunMvnAndJava()
-      -- daptkan path
-      local root = vim.uv.cwd()
-      local fname = vim.api.nvim_buf_get_name(0)
-      fname = fname:gsub(root, "")
-      fname = fname:gsub("/src/main/java/", "")
-      fname = fname:gsub("\\src\\main\\java\\", "")
-      fname = fname:gsub(".java", ""):gsub("/", ".")
-      fname = fname:gsub("\\", ".")
-      -- Jalankan perintah mvn package secara diam-diam
+    local result = check_Main_Class()
+    if not result then
       local notif_ok, notify = pcall(require, "notify")
       if notif_ok then
-        notify("Compile Start !", "info")
+        notify("Please open java main class !", "info")
+      else
+        print("Please open java main class !")
       end
-      vim.fn.jobstart("mvn package", {
-        on_exit = function()
-          vim.cmd("terminal java -cp target/" .. jar_file .. " " .. fname)
-        end,
-      })
+      return
+    else
+      -- Fungsi untuk mencari file .jar dalam folder target
+      local function find_jar_file()
+        local target_dir = "target"
+        local jar_file = nil
+
+        local handle = vim.loop.fs_scandir(target_dir)
+        if handle then
+          while true do
+            local name, t = vim.loop.fs_scandir_next(handle)
+            if not name then
+              break
+            end
+            if t == "file" and name:match("%.jar$") then
+              jar_file = name
+              break
+            end
+          end
+        end
+        return jar_file
+      end
+      local jar_file = find_jar_file()
+      -- Buat fungsi untuk menjalankan perintah secara berurutan dalam mode diam
+      function RunMvnAndJava()
+        -- daptkan path
+        local root = vim.uv.cwd()
+        local fname = vim.api.nvim_buf_get_name(0)
+        fname = fname:gsub(root, "")
+        fname = fname:gsub("/src/main/java/", "")
+        fname = fname:gsub("\\src\\main\\java\\", "")
+        fname = fname:gsub(".java", ""):gsub("/", ".")
+        fname = fname:gsub("\\", ".")
+        -- Jalankan perintah mvn package secara diam-diam
+        local notif_ok, notify = pcall(require, "notify")
+        if notif_ok then
+          notify("Compile Start !", "info")
+        end
+        vim.fn.jobstart("mvn package", {
+          on_exit = function()
+            vim.cmd("terminal java -cp target/" .. jar_file .. " " .. fname)
+          end,
+        })
+      end
+      RunMvnAndJava()
     end
-    RunMvnAndJava()
   else
     local notif_ok, notify = pcall(require, "notify")
     if notif_ok then
