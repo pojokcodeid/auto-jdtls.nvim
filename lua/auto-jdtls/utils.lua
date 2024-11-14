@@ -61,7 +61,11 @@ M.is_maven_project = function()
 end
 
 M.is_gradle_project = function()
-  if vim.fn.findfile("build.gradle", vim.fn.getcwd()) == "build.gradle" then
+  if 
+    vim.fn.findfile("build.gradle", vim.fn.getcwd()) == "build.gradle" or
+    vim.fn.findfile("settings.gradle", vim.fn.getcwd()) == "settings.gradle" or
+    vim.fn.findfile("gradlew", vim.fn.getcwd()) == "gradlew"
+  then
     return true
   else
     return false
@@ -169,8 +173,14 @@ M.run_mvn_and_java = function()
 end
 
 M.cmd_mvn_and_java = function()
-  vim.api.nvim_create_user_command("RunMvnAndJava", function()
+  vim.api.nvim_create_user_command("RunMaven", function()
     M.run_mvn_and_java()
+  end, { nargs = 0 })
+end
+
+M.cmd_gradle = function()
+  vim.api.nvim_create_user_command("RunGradle", function()
+    vim.cmd("terminal gradle run")
   end, { nargs = 0 })
 end
 -- stylua: ignore 
@@ -304,6 +314,7 @@ M.attach_jdtls = function(op)
     M.cmd_maven_spring_boot()
     M.cmd_gradle_spring_boot()
     M.cmd_mvn_and_java()
+    M.cmd_gradle()
     -- Configuration can be augmented and overridden by opts.jdtls
     local config = M.extend_or_override({
       cmd = M.opts.full_cmd(M.opts),
