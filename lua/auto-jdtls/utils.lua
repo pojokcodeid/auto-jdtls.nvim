@@ -74,6 +74,26 @@ M.jdtls_keymaps=function ()
   vim.keymap.set('n', '<leader>JT', "<Cmd> lua require('jdtls').test_class()<CR>", { desc = "Java Test Class" })
   -- Set a Vim motion to <Space> + <Shift>J + u to update the project configuration
   vim.keymap.set('n', '<leader>Ju', "<Cmd> JdtUpdateConfig<CR>", { desc = "Java Update Config" })
+  -- add keymaps for run code
+  if vim.fn.findfile("pom.xml", vim.fn.getcwd()) == "pom.xml" then
+    function RunMavenSpringBoot()
+      vim.cmd("terminal mvn spring-boot:run")
+    end
+    vim.keymap.set("n", "<leader>rm", ":lua RunMavenSpringBoot()<CR>", { desc = "Run Maven Sping Boot" })
+  end
+  if vim.fn.findfile("build.gradle", vim.fn.getcwd()) == "build.gradle" then
+    function RunGradleSpringBoot()
+      local uname = vim.loop.os_uname().sysname
+      if uname == "Windows_NT" then
+        vim.cmd("terminal .\\gradlew build --continuous")
+        vim.cmd("terminal .\\gradlew bootRun")
+      else
+        vim.cmd("terminal ./gradlew build --continuous")
+        vim.cmd("terminal ./gradlew bootRun")
+      end
+    end
+    vim.keymap.set("n", "<leader>rG", ":lua RunGradleSpringBoot()<CR>", { desc = "Run Gradle Sping Boot" })
+  end
 end
 
 M.opts = {
