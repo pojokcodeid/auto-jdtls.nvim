@@ -52,50 +52,69 @@ M.lsp_keymaps=function ()
   vim.keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "Code Goto Declaration" })
 end
 
--- stylua: ignore 
-M.jdtls_keymaps=function ()
-  -- add keymaps
-  vim.keymap.set('n', '<leader>J', "", { desc = "Java" })
-  -- Set a Vim motion to <Space> + <Shift>J + o to organize imports in normal mode
-  vim.keymap.set('n', '<leader>Jo', "<Cmd> lua require('jdtls').organize_imports()<CR>", { desc = "Java Organize Imports" })
-  -- Set a Vim motion to <Space> + <Shift>J + v to extract the code under the cursor to a variable
-  vim.keymap.set('n', '<leader>Jv', "<Cmd> lua require('jdtls').extract_variable()<CR>", { desc = "Java Extract Variable" })
-  -- Set a Vim motion to <Space> + <Shift>J + v to extract the code selected in visual mode to a variable
-  vim.keymap.set('v', '<leader>Jv', "<Esc><Cmd> lua require('jdtls').extract_variable(true)<CR>", { desc = "Java Extract Variable" })
-  -- Set a Vim motion to <Space> + <Shift>J + <Shift>C to extract the code under the cursor to a static variable
-  vim.keymap.set('n', '<leader>JC', "<Cmd> lua require('jdtls').extract_constant()<CR>", { desc = "Java Extract Constant" })
-  -- Set a Vim motion to <Space> + <Shift>J + <Shift>C to extract the code selected in visual mode to a static variable
-  vim.keymap.set('v', '<leader>JC', "<Esc><Cmd> lua require('jdtls').extract_constant(true)<CR>", { desc = "Java Extract Constant" })
-  -- Set a Vim motion to <Space> + <Shift>J + t to run the test method currently under the cursor
-  vim.keymap.set('n', '<leader>Jt', "<Cmd> lua require('jdtls').test_nearest_method()<CR>", { desc = "Java Test Method" })
-  -- Set a Vim motion to <Space> + <Shift>J + t to run the test method that is currently selected in visual mode
-  vim.keymap.set('v', '<leader>Jt', "<Esc><Cmd> lua require('jdtls').test_nearest_method(true)<CR>", { desc = "Java Test Method" })
-  -- Set a Vim motion to <Space> + <Shift>J + <Shift>T to run an entire test suite (class)
-  vim.keymap.set('n', '<leader>JT', "<Cmd> lua require('jdtls').test_class()<CR>", { desc = "Java Test Class" })
-  -- Set a Vim motion to <Space> + <Shift>J + u to update the project configuration
-  vim.keymap.set('n', '<leader>Ju', "<Cmd> JdtUpdateConfig<CR>", { desc = "Java Update Config" })
-  -- add keymaps for run code
+M.is_maven_project = function()
   if vim.fn.findfile("pom.xml", vim.fn.getcwd()) == "pom.xml" then
-    function RunMavenSpringBoot()
-      vim.cmd("terminal mvn spring-boot:run")
-    end
-    vim.keymap.set("n", "<leader>rm", ":lua RunMavenSpringBoot()<CR>", { desc = "Run Maven Sping Boot" })
+    return true
+  else
+    return false
   end
+end
+
+M.is_gradle_project = function()
   if vim.fn.findfile("build.gradle", vim.fn.getcwd()) == "build.gradle" then
-    function RunGradleSpringBoot()
-      local uname = vim.loop.os_uname().sysname
-      if uname == "Windows_NT" then
-        vim.cmd("terminal .\\gradlew build --continuous")
-        vim.cmd("terminal .\\gradlew bootRun")
-      else
-        vim.cmd("terminal ./gradlew build --continuous")
-        vim.cmd("terminal ./gradlew bootRun")
-      end
-    end
-    vim.keymap.set("n", "<leader>rG", ":lua RunGradleSpringBoot()<CR>", { desc = "Run Gradle Sping Boot" })
+    return true
+  else
+    return false
   end
-  -- Run maven projek
-  if vim.fn.findfile("pom.xml", vim.fn.getcwd()) == "pom.xml" then
+end
+
+M.run_aven_pring_boot = function()
+  if M.is_maven_project() then
+    vim.cmd("terminal mvn spring-boot:run")
+  else
+    local notif_ok, notify = pcall(require, "notify")
+    if notif_ok then
+      notify("Project pom.xml not found !", "info")
+    else
+      print("Project pom.xml not found !")
+    end
+  end
+end
+
+M.cmd_maven_spring_boot = function()
+  vim.api.nvim_create_user_command("RunMvnSpringBoot", function()
+    M.run_aven_pring_boot()
+  end, { nargs = 0 })
+end
+
+M.run_gradle_spring_boot = function()
+  if M.is_gradle_project() then
+    local uname = vim.loop.os_uname().sysname
+    if uname == "Windows_NT" then
+      vim.cmd("terminal .\\gradlew build --continuous")
+      vim.cmd("terminal .\\gradlew bootRun")
+    else
+      vim.cmd("terminal ./gradlew build --continuous")
+      vim.cmd("terminal ./gradlew bootRun")
+    end
+  else
+    local notif_ok, notify = pcall(require, "notify")
+    if notif_ok then
+      notify("Project build.gradle not found !", "info")
+    else
+      print("Project build.gradle not found !")
+    end
+  end
+end
+
+M.cmd_gradle_spring_boot = function()
+  vim.api.nvim_create_user_command("RunGradleSpringBoot", function()
+    M.run_gradle_spring_boot()
+  end, { nargs = 0 })
+end
+
+M.run_mvn_and_java = function()
+  if M.is_maven_project() then
     -- Fungsi untuk mencari file .jar dalam folder target
     local function find_jar_file()
       local target_dir = "target"
@@ -138,13 +157,50 @@ M.jdtls_keymaps=function ()
         end,
       })
     end
-    -- Buat command custom di Neovim
-    vim.api.nvim_create_user_command("RunMvnAndJava", function()
-      Run_mvn_and_java()
-    end, { nargs = 0 })
-    -- Buat key mapping yang memanggil fungsi di atas
-    vim.keymap.set("n", "<leader>rM", ":lua Run_mvn_and_java()<CR>", { desc = "Run Maven Project" })
+  else
+    local notif_ok, notify = pcall(require, "notify")
+    if notif_ok then
+      notify("Project pom.xml not found !", "info")
+    else
+      print("Project pom.xml not found !")
+    end
   end
+end
+
+M.cmd_mvn_and_java = function()
+  vim.api.nvim_create_user_command("RunMvnAndJava", function()
+    M.run_mvn_and_java()
+  end, { nargs = 0 })
+end
+-- stylua: ignore 
+M.jdtls_keymaps=function ()
+  -- add keymaps
+  vim.keymap.set('n', '<leader>J', "", { desc = "Java" })
+  -- Set a Vim motion to <Space> + <Shift>J + o to organize imports in normal mode
+  vim.keymap.set('n', '<leader>Jo', "<Cmd> lua require('jdtls').organize_imports()<CR>", { desc = "Java Organize Imports" })
+  -- Set a Vim motion to <Space> + <Shift>J + v to extract the code under the cursor to a variable
+  vim.keymap.set('n', '<leader>Jv', "<Cmd> lua require('jdtls').extract_variable()<CR>", { desc = "Java Extract Variable" })
+  -- Set a Vim motion to <Space> + <Shift>J + v to extract the code selected in visual mode to a variable
+  vim.keymap.set('v', '<leader>Jv', "<Esc><Cmd> lua require('jdtls').extract_variable(true)<CR>", { desc = "Java Extract Variable" })
+  -- Set a Vim motion to <Space> + <Shift>J + <Shift>C to extract the code under the cursor to a static variable
+  vim.keymap.set('n', '<leader>JC', "<Cmd> lua require('jdtls').extract_constant()<CR>", { desc = "Java Extract Constant" })
+  -- Set a Vim motion to <Space> + <Shift>J + <Shift>C to extract the code selected in visual mode to a static variable
+  vim.keymap.set('v', '<leader>JC', "<Esc><Cmd> lua require('jdtls').extract_constant(true)<CR>", { desc = "Java Extract Constant" })
+  -- Set a Vim motion to <Space> + <Shift>J + t to run the test method currently under the cursor
+  vim.keymap.set('n', '<leader>Jt', "<Cmd> lua require('jdtls').test_nearest_method()<CR>", { desc = "Java Test Method" })
+  -- Set a Vim motion to <Space> + <Shift>J + t to run the test method that is currently selected in visual mode
+  vim.keymap.set('v', '<leader>Jt', "<Esc><Cmd> lua require('jdtls').test_nearest_method(true)<CR>", { desc = "Java Test Method" })
+  -- Set a Vim motion to <Space> + <Shift>J + <Shift>T to run an entire test suite (class)
+  vim.keymap.set('n', '<leader>JT', "<Cmd> lua require('jdtls').test_class()<CR>", { desc = "Java Test Class" })
+  -- Set a Vim motion to <Space> + <Shift>J + u to update the project configuration
+  vim.keymap.set('n', '<leader>Ju', "<Cmd> JdtUpdateConfig<CR>", { desc = "Java Update Config" })
+  -- add keymaps for run code
+  M.cmd_maven_spring_boot()
+  vim.keymap.set("n", "<leader>rm", ":RunMvnSpringBoot<CR>", { desc = "Run Maven Sping Boot" })
+  M.cmd_gradle_spring_boot()
+  vim.keymap.set("n", "<leader>rG", ":RunGradleSpringBoot<CR>", { desc = "Run Gradle Sping Boot" })
+  M.cmd_mvn_and_java()
+  vim.keymap.set("n", "<leader>rM", ":RunMvnAndJava<CR>", { desc = "Run Maven Project" })
 end
 
 M.opts = {
