@@ -131,7 +131,7 @@ end
 
 M.run_mvn_and_java = function()
   if M.is_maven_project() then
-    local result = check_Main_Class()
+    local result = M.is_main_class()
     if not result then
       local notif_ok, notify = pcall(require, "notify")
       if notif_ok then
