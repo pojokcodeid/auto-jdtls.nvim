@@ -84,6 +84,7 @@ M.is_main_class = function()
 
     return false
   end
+  check_Main_Class()
 end
 
 M.run_aven_pring_boot = function()
