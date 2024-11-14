@@ -72,6 +72,30 @@ M.is_gradle_project = function()
   end
 end
 
+M.is_main_class = function()
+  local function check_Main_Class()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    for i, line in ipairs(content) do
+      if line:match("public static void main%s*%(") then
+        return true
+      end
+    end
+
+    return false
+  end
+  local result = check_Main_Class()
+  if not result then
+    local notif_ok, notify = pcall(require, "notify")
+    if notif_ok then
+      notify("Please open java main class !", "info")
+    else
+      print("Please open java main class !")
+    end
+    return
+  end
+end
+
 M.run_aven_pring_boot = function()
   if M.is_maven_project() then
     vim.cmd("terminal mvn spring-boot:run")
@@ -119,6 +143,7 @@ end
 
 M.run_mvn_and_java = function()
   if M.is_maven_project() then
+    M.is_main_class()
     -- Fungsi untuk mencari file .jar dalam folder target
     local function find_jar_file()
       local target_dir = "target"
