@@ -195,13 +195,6 @@ M.jdtls_keymaps=function ()
   vim.keymap.set('n', '<leader>JT', "<Cmd> lua require('jdtls').test_class()<CR>", { desc = "Java Test Class" })
   -- Set a Vim motion to <Space> + <Shift>J + u to update the project configuration
   vim.keymap.set('n', '<leader>Ju', "<Cmd> JdtUpdateConfig<CR>", { desc = "Java Update Config" })
-  -- add keymaps for run code
-  M.cmd_maven_spring_boot()
-  vim.keymap.set("n", "<leader>rm", ":RunMvnSpringBoot<CR>", { desc = "Run Maven Sping Boot" })
-  M.cmd_gradle_spring_boot()
-  vim.keymap.set("n", "<leader>rG", ":RunGradleSpringBoot<CR>", { desc = "Run Gradle Sping Boot" })
-  M.cmd_mvn_and_java()
-  vim.keymap.set("n", "<leader>rM", ":RunMvnAndJava<CR>", { desc = "Run Maven Project" })
 end
 
 M.opts = {
@@ -307,6 +300,10 @@ M.attach_jdtls = function(op)
   end
   -- initialisasi config
   local function attach_jdtls()
+    -- load user cmd
+    M.cmd_maven_spring_boot()
+    M.cmd_gradle_spring_boot()
+    M.cmd_mvn_and_java()
     -- Configuration can be augmented and overridden by opts.jdtls
     local config = M.extend_or_override({
       cmd = M.opts.full_cmd(M.opts),
