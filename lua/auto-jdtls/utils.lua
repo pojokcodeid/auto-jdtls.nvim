@@ -137,7 +137,7 @@ M.run_mvn_and_java = function()
     end
     local jar_file = find_jar_file()
     -- Buat fungsi untuk menjalankan perintah secara berurutan dalam mode diam
-    function Run_mvn_and_java()
+    function RunMvnAndJava()
       -- daptkan path
       local root = vim.uv.cwd()
       local fname = vim.api.nvim_buf_get_name(0)
@@ -157,6 +157,7 @@ M.run_mvn_and_java = function()
         end,
       })
     end
+    RunMvnAndJava()
   else
     local notif_ok, notify = pcall(require, "notify")
     if notif_ok then
