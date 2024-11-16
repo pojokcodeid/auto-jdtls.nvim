@@ -352,6 +352,7 @@ M.attach_jdtls = function(op)
     M.cmd_maven_spring_boot()
     M.cmd_gradle_spring_boot()
     M.cmd_mvn_and_java()
+    M.cmd_mvn_compile()
     M.cmd_gradle()
     -- Configuration can be augmented and overridden by opts.jdtls
     local config = M.extend_or_override({
