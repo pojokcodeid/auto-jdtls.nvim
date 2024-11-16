@@ -14,7 +14,6 @@ dependencies = {
   "pojokcodeid/auto-jdtls.nvim",
   "rcarriga/nvim-notify",
 },
-ft = { "java" },
 -- your opts go here
 opts = {},
 -- stylua: ignore
@@ -70,6 +69,7 @@ User Command :
 - :RunMaven
 - :RunGradleSpringBoot
 - :RunMvnSpringBoot
+- :MavenNewProject
 
 default opts :
 
