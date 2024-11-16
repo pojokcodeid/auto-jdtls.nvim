@@ -201,6 +201,21 @@ M.cmd_mvn_and_java = function()
   end, { nargs = 0 })
 end
 
+M.cmd_mvn_compile= function()
+  vim.api.nvim_create_user_command("RunMavenCompile", function()
+    vim.fn.jobstart("mvn package", {
+      on_exit = function()
+        local notif_ok, notify = pcall(require, "notify")
+        if notif_ok then
+          notify("Compile Finish !", "info")
+        else
+          print("Compile Finish !")
+        end
+      end,
+    })
+  end, { nargs = 0 })
+end
+
 M.cmd_gradle = function()
   vim.api.nvim_create_user_command("RunGradle", function()
     vim.cmd("terminal gradle run")
