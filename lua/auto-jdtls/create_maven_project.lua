@@ -1,20 +1,4 @@
 local function mvn_new_project()
-  -- Fungsi untuk meminta input dari pengguna
-  local function get_user_input(prompt, default_value)
-    vim.fn.inputsave()
-    local result = vim.fn.input(prompt, default_value)
-    vim.fn.inputrestore()
-    return result
-  end
-
-  -- Ambil input dari pengguna untuk menentukan direktori proyek
-  local project_dir = get_user_input("Enter project directory: ", vim.fn.getcwd())
-
-  -- Buat direktori jika belum ada
-  if vim.fn.isdirectory(project_dir) == 0 then
-    vim.fn.mkdir(project_dir, "p")
-  end
-
   local function create_notif(message, level)
     local notif_ok, notify = pcall(require, "notify")
     if notif_ok then
@@ -23,18 +7,62 @@ local function mvn_new_project()
       print(message)
     end
   end
+  -- Fungsi untuk meminta input dari pengguna dengan opsi untuk membatalkan
+  local function get_user_input(prompt, default_value)
+    vim.fn.inputsave()
+    local result = vim.fn.input(prompt, default_value)
+    vim.fn.inputrestore()
 
+    -- Cek apakah pengguna menekan Esc untuk membatalkan input
+    if result == "" then
+      create_notif("Input canceled.", "info")
+      return nil, true
+    end
+
+    return result, false
+  end
+  -- Ambil input dari pengguna untuk menentukan direktori proyek
+  local project_dir, canceled = get_user_input("Enter project directory: ", vim.fn.getcwd())
+  if canceled then
+    return
+  end
+  -- Buat direktori jika belum ada
+  if vim.fn.isdirectory(project_dir) == 0 then
+    if vim.fn.mkdir(project_dir, "p") == 0 then
+      create_notif("Failed to create project directory: " .. project_dir, "error")
+      return
+    end
+  end
   -- Pindah ke direktori proyek
-  vim.fn.chdir(project_dir)
+  local success, err = pcall(vim.fn.chdir, project_dir)
+  if not success then
+    create_notif("Error changing directory: " .. err, "error")
+    return
+  end
+
   create_notif("Changed directory to: " .. project_dir, "info")
-
-  -- Ambil input dari pengguna
-  local group_id = get_user_input("Enter groupId: ", "com.example")
-  local artifact_id = get_user_input("Enter artifactId: ", "myproject")
-  local archetype_artifact_id = get_user_input("Enter archetypeArtifactId: ", "maven-archetype-quickstart")
-  local archetype_version = get_user_input("Enter archetypeVersion: ", "1.4")
-  local interactive_mode = get_user_input("Enter interactiveMode (true/false): ", "false")
-
+  -- Ambil input dari pengguna untuk Maven
+  local group_id, canceled_group = get_user_input("Enter groupId: ", "com.example")
+  if canceled_group then
+    return
+  end
+  local artifact_id, canceled_artifact = get_user_input("Enter artifactId: ", "myproject")
+  if canceled_artifact then
+    return
+  end
+  local archetype_artifact_id, canceled_archetype =
+    get_user_input("Enter archetypeArtifactId: ", "maven-archetype-quickstart")
+  if canceled_archetype then
+    return
+  end
+  local archetype_version, canceled_version = get_user_input("Enter archetypeVersion: ", "1.4")
+  if canceled_version then
+    return
+  end
+  local interactive_mode, canceled_interactive = get_user_input("Enter interactiveMode (true/false): ", "false")
+  if canceled_interactive then
+    return
+  end
   -- Format perintah Maven berdasarkan input pengguna
   local command = string.format(
     [[mvn archetype:generate "-DgroupId=%s" "-DartifactId=%s" "-DarchetypeArtifactId=%s" "-DarchetypeVersion=%s" "-DinteractiveMode=%s"]],
@@ -57,16 +85,20 @@ local function mvn_new_project()
       -- Cari dan buka file main class
       local uname = vim.loop.os_uname().sysname
       if uname == "Windows_NT" then
-        group_id = group_id:gsub("%.", "\\")
-        local main_class_path = string.format("src\\main\\java\\%s\\App.java", group_id)
-        if vim.fn.filereadable(main_class_path) == 1 then
-          vim.cmd(":edit " .. main_class_path)
+        if group_id then
+          group_id = group_id:gsub("%.", "\\")
+          local main_class_path = string.format("src\\main\\java\\%s\\App.java", group_id)
+          if vim.fn.filereadable(main_class_path) == 1 then
+            vim.cmd(":edit " .. main_class_path)
+          end
         end
       else
-        group_id = group_id:gsub("%.", "/")
-        local main_class_path = string.format("src/main/java/%s/App.java", group_id)
-        if vim.fn.filereadable(main_class_path) == 1 then
-          vim.cmd(":edit " .. main_class_path)
+        if group_id then
+          group_id = group_id:gsub("%.", "/")
+          local main_class_path = string.format("src/main/java/%s/App.java", group_id)
+          if vim.fn.filereadable(main_class_path) == 1 then
+            vim.cmd(":edit " .. main_class_path)
+          end
         end
       end
       vim.cmd(":NvimTreeFindFileToggl<CR>")
